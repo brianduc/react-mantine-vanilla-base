@@ -7,9 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": [
-      "**/.react-router/**"
-    ]
+    "ignore": ["**/.react-router/**", "**/tsconfig.*"]
   },
   "formatter": {
     "enabled": true,
@@ -21,12 +19,7 @@
     "lineWidth": 100,
     "attributePosition": "auto",
     "bracketSpacing": true,
-    "ignore": [
-      "**/node_modules",
-      "**/dist",
-      "**/coverage",
-      "**/.react-router/**"
-    ]
+    "ignore": ["**/node_modules", "**/dist", "**/coverage", "**/.react-router/**"]
   },
   "organizeImports": {
     "enabled": true
@@ -53,6 +46,7 @@
         "noInvalidConstructorSuper": "error",
         "noNewSymbol": "off",
         "noNonoctalDecimalEscape": "error",
+        "noUnusedImports": "error",
         "noPrecisionLoss": "error",
         "noSelfAssign": "error",
         "noSetterReturn": "error",
@@ -111,10 +105,7 @@
         "useValidTypeof": "error"
       }
     },
-    "ignore": [
-      "**/dist",
-      "**/.eslintrc.cjs"
-    ]
+    "ignore": ["**/dist", "**/.eslintrc.cjs"]
   },
   "javascript": {
     "formatter": {
