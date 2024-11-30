@@ -35,7 +35,7 @@
     "@react-router/fs-routes": "^7.0.1",
     "@react-router/node": "*",
     "@react-router/serve": "*",
-    "@tabler/icons-react": "^3.22.0",
+    "@tabler/icons-react": "^3.23.0",
     "@tanstack/react-query": "^5.61.5",
     "@tanstack/react-query-devtools": "^5.61.5",
     "@tiptap/extension-link": "^2.10.2",

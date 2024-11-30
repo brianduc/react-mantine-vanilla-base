@@ -1,13 +1,19 @@
 import { Constants } from '@/infrastructure/core/constants';
-import axios, { AxiosInstance } from 'axios';
+import FailureResponse from '@/infrastructure/core/libs/axios/response/FailureResponse';
+import InvalidModelStateResponse from '@/infrastructure/core/libs/axios/response/InvalidModelStateResponse';
+import SuccessResponse from '@/infrastructure/core/libs/axios/response/SuccessResponse';
+import { notifyError } from '@/infrastructure/utils/notification/notification';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 
 class AxiosService {
   private instance: AxiosInstance;
+  private isRefreshing = false;
+  private refreshQueue: Array<(token: string) => void> = [];
   private abortController: AbortController | null = null;
 
   constructor() {
     this.instance = axios.create({
-      baseURL: import.meta.env.VITE_APP_API_URL as string,
+      baseURL: import.meta.env.VITE_APP_API_URL,
     });
 
     this.addInterceptors();
@@ -17,7 +23,6 @@ class AxiosService {
    * Add request and response interceptors
    */
   private addInterceptors() {
-    // Add Authorization header if token exists
     this.instance.interceptors.request.use((config) => {
       const token = localStorage.getItem(Constants.API_TOKEN_KEY);
       if (token) {
@@ -26,40 +31,114 @@ class AxiosService {
       return config;
     });
 
-    // Handle responses and refresh token logic
     this.instance.interceptors.response.use(
-      (response) => response, // Pass successful response
+      (response) => this.handleResponse(response), // Handle success responses
       async (error) => {
-        const originalRequest = error.config;
-
-        // Handle 401 Unauthorized errors
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
-          const refreshToken = localStorage.getItem(Constants.API_REFRESH_TOKEN_KEY);
-
-          if (!refreshToken) {
-            this.handleLogout();
-            return Promise.reject(error);
-          }
-
-          try {
-            const { data } = await this.instance.post('/auth/refresh-token', { refreshToken });
-            localStorage.setItem(Constants.API_TOKEN_KEY, data.accessToken); // Save new token
-            originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-            return this.instance(originalRequest); // Retry original request
-          } catch (refreshError) {
-            this.handleLogout();
-            return Promise.reject(refreshError);
-          }
+        if (error.response?.status === 401) {
+          return this.handle401Error(error);
         }
-
-        return Promise.reject(error); // Pass all other errors
+        return Promise.reject(error);
       }
     );
   }
 
   /**
-   * Handle user logout by clearing tokens and redirecting to login
+   * Handle responses with specific status codes
+   */
+  private handleResponse(response: any) {
+    switch (response.status) {
+      case 200: {
+        const successResponse = new SuccessResponse('Success', response.data);
+        if (!successResponse.data.success) {
+          notifyError({
+            title: 'Error',
+            message:
+              successResponse.data.errors?.[0]?.error ||
+              successResponse.data.message ||
+              'An error occurred. Please contact the administrator.',
+          });
+        }
+        return successResponse;
+      }
+
+      case 202: {
+        const failureResponse = new FailureResponse({
+          code: '202',
+          message: response.data.message || 'Request failed.',
+          success: false,
+        });
+        notifyError({
+          title: 'Failure Response',
+          message: failureResponse.message,
+        });
+        return Promise.reject(failureResponse);
+      }
+
+      case 400: {
+        const invalidModelResponse = new InvalidModelStateResponse({
+          code: '400',
+          message: response.data.errors?.[0]?.message || 'Invalid request parameters.',
+          success: false,
+        });
+        notifyError({
+          title: 'Validation Error',
+          message: invalidModelResponse.message[0],
+        });
+        return Promise.reject(invalidModelResponse);
+      }
+
+      default: {
+        return response;
+      }
+    }
+  }
+
+  /**
+   * Handle 401 Unauthorized errors
+   */
+  private async handle401Error(error: AxiosError) {
+    const originalRequest = error.config;
+
+    if (!originalRequest) return Promise.reject(error);
+
+    if (this.isRefreshing) {
+      return new Promise((resolve) => {
+        this.refreshQueue.push((newToken) => {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          resolve(this.instance(originalRequest));
+        });
+      });
+    }
+
+    this.isRefreshing = true;
+    const refreshToken = localStorage.getItem(Constants.API_REFRESH_TOKEN_KEY);
+
+    if (!refreshToken) {
+      this.handleLogout();
+      return Promise.reject(error);
+    }
+
+    try {
+      const { data } = await this.instance.post('/auth/refresh-token', { refreshToken });
+      const newToken = data.accessToken;
+      localStorage.setItem(Constants.API_TOKEN_KEY, newToken);
+
+      // Resolve all queued requests with the new token
+      this.refreshQueue.forEach((callback) => callback(newToken));
+      this.refreshQueue = [];
+
+      originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      return this.instance(originalRequest);
+    } catch (refreshError) {
+      this.handleLogout();
+      return Promise.reject(refreshError);
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+
+  /**
+   * Handle logout by clearing tokens and redirecting to login
    */
   private handleLogout() {
     localStorage.removeItem(Constants.API_TOKEN_KEY);
@@ -68,7 +147,7 @@ class AxiosService {
   }
 
   /**
-   * Create a new signal for request cancellation
+   * Create a new AbortSignal for request cancellation
    */
   public createAbortSignal(): AbortSignal {
     this.abortController = new AbortController();
@@ -76,7 +155,7 @@ class AxiosService {
   }
 
   /**
-   * Abort any ongoing requests
+   * Cancel any ongoing requests
    */
   public cancelRequests() {
     this.abortController?.abort();
