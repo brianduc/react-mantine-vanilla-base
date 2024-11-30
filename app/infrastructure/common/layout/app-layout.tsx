@@ -2,14 +2,7 @@ import { AppShell, Burger, Group, Skeleton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconBrandMantine } from '@tabler/icons-react';
 
-export function meta() {
-  return [
-    { title: 'New React Router App' },
-    { name: 'description', content: 'Welcome to React Router!' },
-  ];
-}
-
-export default function Home() {
+const AppLayout = () => {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
 
@@ -41,4 +34,6 @@ export default function Home() {
       <AppShell.Main>Main</AppShell.Main>
     </AppShell>
   );
-}
+};
+
+export default AppLayout;
