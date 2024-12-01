@@ -60,7 +60,6 @@
         "noUnusedPrivateClassMembers": "error",
         "noUnusedVariables": "error",
         "useArrayLiterals": "off",
-        "useExhaustiveDependencies": "warn",
         "useHookAtTopLevel": "error",
         "useIsNan": "error",
         "useValidForDirection": "error",

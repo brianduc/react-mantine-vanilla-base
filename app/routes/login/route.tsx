@@ -1,4 +1,5 @@
 import useLogin from '@/infrastructure/api/hooks/auth/useLogin';
+import { AppRoutes } from '@/infrastructure/core/appRoutes';
 import { Constants } from '@/infrastructure/core/constants';
 import { Box, Button, Container, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { TransformedValues, useForm } from '@mantine/form';
@@ -17,7 +18,7 @@ const Login = () => {
     onSuccess: (data) => {
       localStorage.setItem(Constants.API_TOKEN_KEY, data.accessToken);
       localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, data.refreshToken);
-      navigate('/dashboard', { replace: true });
+      navigate(AppRoutes.PRIVATE.DASHBOARD, { replace: true });
     },
   });
 

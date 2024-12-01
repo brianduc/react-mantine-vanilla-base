@@ -7,27 +7,22 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
   useLoaderData,
+  useLocation,
   useNavigate,
 } from 'react-router';
 import '@mantine/core/styles.css';
 import '@mantine/carousel/styles.css';
 import '@mantine/charts/styles.css';
 import '@/index.css';
-import {
-  AppShell,
-  Burger,
-  ColorSchemeScript,
-  Group,
-  MantineProvider,
-  Skeleton,
-} from '@mantine/core';
+import { ColorSchemeScript, LoadingOverlay, MantineProvider } from '@mantine/core';
 // NOTE: Do not change the order of the imports above, especially the Mantine css imports. Doing so will break the styling of the app.
 
 import type { Route } from './+types/root';
 
 import stylesheet from '@/index.css?url';
+import AppLayout from '@/infrastructure/common/components/layout/appLayout';
+import { AppRoutes } from '@/infrastructure/core/appRoutes';
 import { Constants } from '@/infrastructure/core/constants';
-import { useDisclosure } from '@mantine/hooks';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
@@ -37,6 +32,20 @@ export const clientLoader = async () => {
   const token = localStorage.getItem(Constants.API_TOKEN_KEY);
   return { isLoggedIn: !!token };
 };
+
+export function HydrateFallback() {
+  return (
+    <LoadingOverlay
+      visible={true}
+      zIndex={1000}
+      loaderProps={{ type: 'bars' }}
+      transitionProps={{
+        duration: 500,
+        timingFunction: 'ease',
+      }}
+    />
+  );
+}
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -75,46 +84,27 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
-  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
-  const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
   const { isLoggedIn } = useLoaderData<typeof clientLoader>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (isLoggedIn) navigate('/dashboard', { replace: true });
-    else navigate('/login', { replace: true });
-  }, [isLoggedIn, navigate]);
+    const token = localStorage.getItem(Constants.API_TOKEN_KEY);
+
+    // Redirect only if the user is not already on the correct page
+    if (token && location.pathname === AppRoutes.PUBLIC.AUTH.LOGIN) {
+      navigate(AppRoutes.PRIVATE.DASHBOARD, { replace: true });
+    } else if (!token && location.pathname !== AppRoutes.PUBLIC.AUTH.LOGIN) {
+      navigate(AppRoutes.PUBLIC.AUTH.LOGIN, { replace: true });
+    }
+  }, [isLoggedIn, location.pathname, navigate]);
 
   return (
     <>
       {isLoggedIn ? (
-        <AppShell
-          header={{ height: 60 }}
-          navbar={{
-            width: 300,
-            breakpoint: 'sm',
-            collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
-          }}
-          padding='md'
-        >
-          <AppShell.Header>
-            <Group h='100%' px='md'>
-              <Burger opened={mobileOpened} onClick={toggleMobile} hiddenFrom='sm' size='sm' />
-              <Burger opened={desktopOpened} onClick={toggleDesktop} visibleFrom='sm' size='sm' />
-            </Group>
-          </AppShell.Header>
-          <AppShell.Navbar p='md'>
-            Navbar
-            {Array(15)
-              .fill(0)
-              .map((_, index) => (
-                <Skeleton key={index} h={28} mt='sm' animate={false} />
-              ))}
-          </AppShell.Navbar>
-          <AppShell.Main>
-            <Outlet />
-          </AppShell.Main>
-        </AppShell>
+        <AppLayout>
+          <Outlet />
+        </AppLayout>
       ) : (
         // Render public routes (e.g., login, register)
         <Outlet />
