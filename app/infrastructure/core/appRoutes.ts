@@ -1,4 +1,5 @@
 export class AppRoutes {
+  static readonly ROOT = '/';
   static readonly PUBLIC = class {
     static readonly AUTH = {
       LOGIN: '/login',

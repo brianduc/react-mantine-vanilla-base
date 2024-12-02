@@ -20,6 +20,8 @@ import { ColorSchemeScript, LoadingOverlay, MantineProvider } from '@mantine/cor
 import type { Route } from './+types/root';
 
 import stylesheet from '@/index.css?url';
+import { NotFound } from '@/infrastructure/common/components/error-screen/404/not-found';
+import { GeneralError } from '@/infrastructure/common/components/error-screen/general/general-error';
 import AppLayout from '@/infrastructure/common/components/layout/appLayout';
 import { AppRoutes } from '@/infrastructure/core/appRoutes';
 import { Constants } from '@/infrastructure/core/constants';
@@ -93,7 +95,7 @@ export default function App() {
 
     // Redirect only if the user is not already on the correct page
     if (token && location.pathname === AppRoutes.PUBLIC.AUTH.LOGIN) {
-      navigate(AppRoutes.PRIVATE.DASHBOARD, { replace: true });
+      navigate(AppRoutes.ROOT, { replace: true });
     } else if (!token && location.pathname !== AppRoutes.PUBLIC.AUTH.LOGIN) {
       navigate(AppRoutes.PUBLIC.AUTH.LOGIN, { replace: true });
     }
@@ -114,28 +116,8 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = 'Oops!';
-  let details = 'An unexpected error occurred.';
-  let stack: string | undefined;
+  let isNotFound = false;
+  if (isRouteErrorResponse(error)) isNotFound = error.status === 404;
 
-  if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? '404' : 'Error';
-    details =
-      error.status === 404 ? 'The requested page could not be found.' : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
-  }
-
-  return (
-    <main className='pt-16 p-4 container mx-auto'>
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className='w-full p-4 overflow-x-auto'>
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
-  );
+  return <main>{isNotFound ? <NotFound /> : <GeneralError />}</main>;
 }
