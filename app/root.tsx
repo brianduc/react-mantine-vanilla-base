@@ -61,6 +61,11 @@ export const links: Route.LinksFunction = () => [
     href: 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap',
   },
   { rel: 'stylesheet', href: stylesheet },
+  // {
+  //   rel: 'icon',
+  //   href: '/favicon.ico',
+  //   type: 'image/x-icon',
+  // },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -116,8 +121,18 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let isNotFound = false;
-  if (isRouteErrorResponse(error)) isNotFound = error.status === 404;
+  let errorPage = null;
+  if (isRouteErrorResponse(error)) {
+    switch (error.status) {
+      case 404:
+        errorPage = <NotFound />;
+        break;
+      case 403:
+      default:
+        errorPage = <GeneralError />;
+        break;
+    }
+  }
 
-  return <main>{isNotFound ? <NotFound /> : <GeneralError />}</main>;
+  return <main>{errorPage}</main>;
 }

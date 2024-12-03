@@ -8,33 +8,47 @@ import {
   useQuery,
 } from '@tanstack/react-query';
 
-interface UseGetApiProps {
+interface UseGetApiProps<TResponse> {
   queryKey: QueryKey;
   endpoint: string;
-  urlParams?: Record<string, any>;
-  options?: QueryOptions;
+  urlParams?: Record<string, string | number> | null;
+  queryParams?: Record<string, string | number | boolean | undefined> | null;
+  options?: QueryOptions<any, any, TResponse>;
 }
 
-interface UseMutationApiProps {
+interface UseMutationApiProps<TRequest, TResponse> {
   endpoint: string;
-  options?: MutationOptions;
+  queryParams?: Record<string, string | number | boolean | undefined> | null;
+  options?: MutationOptions<TResponse, unknown, TRequest, unknown>;
 }
 
 interface UseDeleteApiProps {
-  endpoint: string;
-  urlParams?: Record<string, any>;
+  endpoint: string; // API endpoint
+  urlParams?: Record<string, string | number>;
+  queryParams?: Record<string, string | number | boolean | undefined> | null;
   options?: MutationOptions;
 }
 
 // GET request hook
-export const useGetApi = ({ queryKey, endpoint, urlParams = {}, options = {} }: UseGetApiProps) => {
+export const useGetApi = <TResponse = any>({
+  queryKey,
+  endpoint,
+  urlParams = null,
+  queryParams = null,
+  options = {},
+}: UseGetApiProps<TResponse>) => {
   const { axiosInstance, newAbortSignal } = useAxios();
 
   return useQuery({
     queryKey,
     queryFn: async () => {
-      const signal = newAbortSignal(); // Create signal for request cancellation
-      const response = await axiosInstance.get(buildUrl(endpoint, urlParams), { signal });
+      const signal = newAbortSignal();
+      const response = await axiosInstance.get<TResponse>(
+        buildUrl(endpoint, urlParams, queryParams),
+        {
+          signal,
+        }
+      );
       return response.data;
     },
     ...options,
@@ -42,12 +56,21 @@ export const useGetApi = ({ queryKey, endpoint, urlParams = {}, options = {} }: 
 };
 
 // POST request hook
-export const usePostApi = ({ endpoint, options = {} }: UseMutationApiProps) => {
-  const { axiosInstance } = useAxios();
+export const usePostApi = <TRequest = any, TResponse = any>({
+  endpoint,
+  queryParams = null,
+  options = {},
+}: UseMutationApiProps<TRequest, TResponse>) => {
+  const { axiosInstance, newAbortSignal } = useAxios();
 
-  return useMutation({
-    mutationFn: async (payload: any) => {
-      const response = await axiosInstance.post(endpoint, payload);
+  return useMutation<TResponse, unknown, TRequest, unknown>({
+    mutationFn: async (payload: TRequest) => {
+      const signal = newAbortSignal();
+      const response = await axiosInstance.post<TResponse>(
+        buildUrl(endpoint, null, queryParams),
+        payload,
+        { signal }
+      );
       return response.data;
     },
     ...options,
@@ -55,12 +78,23 @@ export const usePostApi = ({ endpoint, options = {} }: UseMutationApiProps) => {
 };
 
 // PUT request hook
-export const usePutApi = ({ endpoint, options = {} }: UseMutationApiProps) => {
-  const { axiosInstance } = useAxios();
+export const usePutApi = <TRequest = any, TResponse = any>({
+  endpoint,
+  queryParams = {},
+  options = {},
+}: UseMutationApiProps<TRequest, TResponse>) => {
+  const { axiosInstance, newAbortSignal } = useAxios();
 
   return useMutation({
-    mutationFn: async (payload: any) => {
-      const response = await axiosInstance.put(endpoint, payload);
+    mutationFn: async (payload: TRequest) => {
+      const signal = newAbortSignal();
+      const response = await axiosInstance.put<TResponse>(
+        buildUrl(endpoint, {}, queryParams),
+        payload,
+        {
+          signal,
+        }
+      );
       return response.data;
     },
     ...options,
@@ -68,12 +102,20 @@ export const usePutApi = ({ endpoint, options = {} }: UseMutationApiProps) => {
 };
 
 // DELETE request hook
-export const useDeleteApi = ({ endpoint, urlParams = {}, options = {} }: UseDeleteApiProps) => {
-  const { axiosInstance } = useAxios();
+export const useDeleteApi = ({
+  endpoint,
+  urlParams = {},
+  queryParams = {},
+  options = {},
+}: UseDeleteApiProps) => {
+  const { axiosInstance, newAbortSignal } = useAxios();
 
   return useMutation({
     mutationFn: async () => {
-      const response = await axiosInstance.delete(buildUrl(endpoint, urlParams));
+      const signal = newAbortSignal();
+      const response = await axiosInstance.delete(buildUrl(endpoint, urlParams, queryParams), {
+        signal,
+      });
       return response.data;
     },
     ...options,

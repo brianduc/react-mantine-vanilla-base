@@ -18,6 +18,7 @@ const Login = () => {
     onSuccess: (data) => {
       localStorage.setItem(Constants.API_TOKEN_KEY, data.accessToken);
       localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, data.refreshToken);
+      localStorage.setItem(Constants.API_ROLE, 'ADMIN');
       navigate(AppRoutes.PRIVATE.DASHBOARD, { replace: true });
     },
   });

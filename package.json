@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "react-router dev --port 3000",
+    "dev": "react-router dev --port 3000 --mode development",
     "build": "react-router build",
     "build:dev": "react-router build --mode development",
     "build:uat": "react-router build --mode uat",
