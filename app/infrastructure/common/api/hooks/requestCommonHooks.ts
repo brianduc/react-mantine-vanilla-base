@@ -1,9 +1,11 @@
 import useAxios from '@/infrastructure/core/libs/axios/hooks/useAxios';
+import { useToast } from '@/infrastructure/core/libs/hooks/use-toast';
 import { buildUrl } from '@/infrastructure/utils/url/url';
 import {
   MutationOptions,
   QueryKey,
   QueryOptions,
+  UseQueryOptions,
   useMutation,
   useQuery,
 } from '@tanstack/react-query';
@@ -13,7 +15,7 @@ interface UseGetApiProps<TResponse> {
   endpoint: string;
   urlParams?: Record<string, string | number> | null;
   queryParams?: Record<string, string | number | boolean | undefined> | null;
-  options?: QueryOptions<any, any, TResponse>;
+  options?: QueryOptions<any, any, TResponse> | UseQueryOptions<TResponse>;
 }
 
 interface UseMutationApiProps<TRequest, TResponse> {
@@ -62,7 +64,7 @@ export const usePostApi = <TRequest = any, TResponse = any>({
   options = {},
 }: UseMutationApiProps<TRequest, TResponse>) => {
   const { axiosInstance, newAbortSignal } = useAxios();
-
+  const { toast } = useToast();
   return useMutation<TResponse, unknown, TRequest, unknown>({
     mutationFn: async (payload: TRequest) => {
       const signal = newAbortSignal();
@@ -72,6 +74,15 @@ export const usePostApi = <TRequest = any, TResponse = any>({
         { signal }
       );
       return response.data;
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'An error occurred',
+        variant: 'destructive',
+      });
+      if (options.onError)
+        options.onError(error, error.response?.data?.message, error.response?.status);
     },
     ...options,
   });
@@ -84,7 +95,7 @@ export const usePutApi = <TRequest = any, TResponse = any>({
   options = {},
 }: UseMutationApiProps<TRequest, TResponse>) => {
   const { axiosInstance, newAbortSignal } = useAxios();
-
+  const { toast } = useToast();
   return useMutation({
     mutationFn: async (payload: TRequest) => {
       const signal = newAbortSignal();
@@ -96,6 +107,15 @@ export const usePutApi = <TRequest = any, TResponse = any>({
         }
       );
       return response.data;
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'An error occurred',
+        variant: 'destructive',
+      });
+      if (options.onError)
+        options.onError(error, error.response?.data?.message, error.response?.status);
     },
     ...options,
   });
@@ -109,7 +129,6 @@ export const useDeleteApi = ({
   options = {},
 }: UseDeleteApiProps) => {
   const { axiosInstance, newAbortSignal } = useAxios();
-
   return useMutation({
     mutationFn: async () => {
       const signal = newAbortSignal();

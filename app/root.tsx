@@ -10,23 +10,21 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router';
-import '@mantine/core/styles.css';
-import '@mantine/carousel/styles.css';
-import '@mantine/charts/styles.css';
 import '@/index.css';
-import { ColorSchemeScript, LoadingOverlay, MantineProvider } from '@mantine/core';
 // NOTE: Do not change the order of the imports above, especially the Mantine css imports. Doing so will break the styling of the app.
 
 import type { Route } from './+types/root';
 
 import stylesheet from '@/index.css?url';
-import { NotFound } from '@/infrastructure/common/components/error-screen/404/not-found';
+import NotFoundPage from '@/infrastructure/common/components/error-screen/404/not-found';
 import { GeneralError } from '@/infrastructure/common/components/error-screen/general/general-error';
 import AppLayout from '@/infrastructure/common/components/layout/appLayout';
+import { Toaster } from '@/infrastructure/common/ui/toaster';
 import { AppRoutes } from '@/infrastructure/core/appRoutes';
 import { Constants } from '@/infrastructure/core/constants';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Loader2 } from 'lucide-react';
 
 const queryClient = new QueryClient();
 
@@ -37,15 +35,9 @@ export const clientLoader = async () => {
 
 export function HydrateFallback() {
   return (
-    <LoadingOverlay
-      visible={true}
-      zIndex={1000}
-      loaderProps={{ type: 'bars' }}
-      transitionProps={{
-        duration: 500,
-        timingFunction: 'ease',
-      }}
-    />
+    <div className='fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
+      <Loader2 className='h-16 w-16 animate-spin text-primary' />
+    </div>
   );
 }
 
@@ -76,11 +68,11 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <Meta />
         <Links />
-        <ColorSchemeScript />
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-          <MantineProvider>{children}</MantineProvider>
+          {children}
+          <Toaster />
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
         <ScrollRestoration />
@@ -125,7 +117,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   if (isRouteErrorResponse(error)) {
     switch (error.status) {
       case 404:
-        errorPage = <NotFound />;
+        errorPage = <NotFoundPage />;
         break;
       case 403:
       default:

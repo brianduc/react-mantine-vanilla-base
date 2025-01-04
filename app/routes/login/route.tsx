@@ -1,18 +1,37 @@
 import useLogin from '@/infrastructure/api/hooks/auth/useLogin';
+import { Button } from '@/infrastructure/common/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/infrastructure/common/ui/form';
+import { Input } from '@/infrastructure/common/ui/input';
 import { AppRoutes } from '@/infrastructure/core/appRoutes';
 import { Constants } from '@/infrastructure/core/constants';
-import { Box, Button, Container, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
-import { TransformedValues, useForm } from '@mantine/form';
-import { zodResolver } from 'mantine-form-zod-resolver';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 import { z } from 'zod';
 
-export const meta = () => {
-  return [{ title: 'Login' }];
-};
+// Define validation schema using Zod
+const formSchema = z.object({
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
+});
 
 const Login = () => {
   const navigate = useNavigate();
+  // React Hook Form
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+    },
+  });
 
   const { mutate: loginRequest, isPending } = useLogin({
     onSuccess: (data) => {
@@ -23,51 +42,49 @@ const Login = () => {
     },
   });
 
-  const validationSchema = z.object({
-    username: z
-      .string()
-      .min(1, { message: 'This field cannot be empty' })
-      .max(255, { message: 'This field cannot be longer than 255 characters' }),
-    password: z.string().min(1, { message: 'This field cannot be empty' }),
-  });
-  const form = useForm({
-    initialValues: {
-      username: '',
-      password: '',
-    },
-    validate: zodResolver(validationSchema),
-  });
-
-  const handleSubmit = (values: TransformedValues<typeof form>) => {
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
     loginRequest(values);
   };
+
   return (
-    <Container fluid>
-      <Box className={'flex justify-center items-center h-screen'}>
-        <Paper shadow='sm' radius='md' withBorder p='xl' className={'w-1/3'}>
-          <h1 className={'text-30-40 text-center font-bold uppercase mb-10'}>Login into system</h1>
-          <form onSubmit={form.onSubmit(handleSubmit)}>
-            <Stack>
-              <TextInput
-                label={'Username'}
-                placeholder={'Enter your username'}
-                withAsterisk
-                {...form.getInputProps('username')}
-              />
-              <PasswordInput
-                label={'Password'}
-                withAsterisk
-                placeholder={'Enter your password'}
-                {...form.getInputProps('password')}
-              />
-              <Button type={'submit'} loading={isPending}>
-                Login
-              </Button>
-            </Stack>
+    <div className='flex justify-center items-center h-screen'>
+      <div className='w-1/3 p-6 shadow-lg rounded-lg border'>
+        <h1 className='text-2xl font-bold text-center uppercase mb-6'>Login into system</h1>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-6'>
+            <FormField
+              control={form.control}
+              name='username'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input placeholder='Enter your username' {...field} autoFocus />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='password'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type='password' placeholder='Enter your password' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type='submit' className='w-full' disabled={isPending}>
+              {isPending ? 'Logging in...' : 'Login'}
+            </Button>
           </form>
-        </Paper>
-      </Box>
-    </Container>
+        </Form>
+      </div>
+    </div>
   );
 };
 

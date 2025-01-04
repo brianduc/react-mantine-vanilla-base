@@ -1,21 +1,20 @@
 import { MenuItem } from '@/infrastructure/common/components/layout/menuItems';
 import { AppRoutes } from '@/infrastructure/core/appRoutes';
-import { IconHome2, IconUser, IconUserFilled } from '@tabler/icons-react';
 
 export const menuKeys: MenuItem[] = [
   {
     label: 'Dashboard',
-    leftIcon: IconHome2,
+    leftIcon: null,
     path: AppRoutes.PRIVATE.DASHBOARD,
   },
   {
     label: 'Account',
-    leftIcon: IconUser,
+    leftIcon: null,
     path: AppRoutes.PRIVATE.ACCOUNTS,
     children: [
       {
         label: 'Users',
-        leftIcon: IconUserFilled,
+        leftIcon: null,
         path: AppRoutes.PRIVATE.USERS,
       },
     ],

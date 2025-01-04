@@ -1,4 +1,3 @@
-import { NavLink } from '@mantine/core';
 import { useNavigate } from 'react-router';
 
 export interface MenuItem {
@@ -28,16 +27,16 @@ const MenuItems = ({ items, userRoles }: MenuItemsProps) => {
     return menuItems
       .filter((item) => hasAccess(item.roles)) // Filter items based on access
       .map((item, index) => (
-        <NavLink
-          key={index}
-          label={item.label}
-          leftSection={item.leftIcon && <item.leftIcon />}
-          onClick={() => navigate(item.path)}
-          aria-current={item.path === window.location.pathname ? 'page' : undefined}
-          className={'rounded-md'}
-        >
+        <div key={index}>
+          <div
+            onClick={() => {
+              navigate(item.path);
+            }}
+          >
+            {item.label}
+          </div>
           {item.children && renderMenuItems(item.children)}
-        </NavLink>
+        </div>
       ));
   };
 

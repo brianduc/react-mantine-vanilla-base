@@ -1,34 +1,40 @@
-import { Button, Container, Group, Text, Title } from '@mantine/core';
+import { Button } from '@/infrastructure/common/ui/button';
+import { Card, CardContent } from '@/infrastructure/common/ui/card';
+import { Ghost } from 'lucide-react';
 
-export function NotFound() {
+const NotFoundPage = () => {
   return (
-    <Container className='pt-[80px] pb-[80px]'>
-      <div className='text-center font-extrabold text-[38px] leading-[1] mb-[calc(1.5*var(--mantine-spacing-xl))] text-[var(--mantine-color-gray-2)] sm:text-[32px]'>
-        404
-      </div>
-      <Title className='font-[var(--mantine-font-family)] text-center text-[38px] sm:text-[32px]'>
-        You have found a secret place.
-      </Title>
-      <Text
-        c='dimmed'
-        size='lg'
-        ta='center'
-        className='max-w-[500px] mx-auto mt-[var(--mantine-spacing-xl)] mb-[calc(1.5*var(--mantine-spacing-xl))]'
-      >
-        Unfortunately, this is only a 404 page. You may have mistyped the address, or the page has
-        been moved to another URL.
-      </Text>
-      <Group className='justify-center'>
-        <Button
-          variant='subtle'
-          size='md'
-          onClick={() => {
-            window.location.href = '/';
-          }}
-        >
-          Take me back to home page
-        </Button>
-      </Group>
-    </Container>
+    <div className='h-screen w-full flex items-center justify-center bg-gray-50'>
+      <Card className='w-full max-w-md mx-4'>
+        <CardContent className='pt-6 text-center'>
+          <div className='flex justify-center mb-4'>
+            <Ghost className='h-24 w-24 text-gray-400' />
+          </div>
+
+          <h1 className='text-4xl font-bold mb-2'>404</h1>
+          <h2 className='text-2xl font-semibold text-gray-700 mb-4'>Page Not Found</h2>
+
+          <p className='text-gray-500 mb-8'>
+            The page you're looking for doesn't exist or has been moved.
+          </p>
+
+          <div className='flex flex-col sm:flex-row gap-4 justify-center'>
+            <Button
+              onClick={() => window.history.back()}
+              variant='outline'
+              className='w-full sm:w-auto'
+            >
+              Go Back
+            </Button>
+
+            <Button onClick={() => (window.location.href = '/')} className='w-full sm:w-auto'>
+              Return Home
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
-}
+};
+
+export default NotFoundPage;

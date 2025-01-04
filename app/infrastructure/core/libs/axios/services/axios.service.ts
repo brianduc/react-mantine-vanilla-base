@@ -2,7 +2,7 @@ import { Constants } from '@/infrastructure/core/constants';
 import FailureResponse from '@/infrastructure/core/libs/axios/response/FailureResponse';
 import InvalidModelStateResponse from '@/infrastructure/core/libs/axios/response/InvalidModelStateResponse';
 import SuccessResponse from '@/infrastructure/core/libs/axios/response/SuccessResponse';
-import { notifyError } from '@/infrastructure/utils/notification/notification';
+
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
 class AxiosService {
@@ -50,13 +50,7 @@ class AxiosService {
       case 200: {
         const successResponse = new SuccessResponse('Success', response.data);
         if (!successResponse.data.success) {
-          notifyError({
-            title: 'Error',
-            message:
-              successResponse.data.errors?.[0]?.error ||
-              successResponse.data.message ||
-              'An error occurred. Please contact the administrator.',
-          });
+          return Promise.reject(successResponse);
         }
         return successResponse;
       }
@@ -67,10 +61,7 @@ class AxiosService {
           message: response.data.message || 'Request failed.',
           success: false,
         });
-        notifyError({
-          title: 'Failure Response',
-          message: failureResponse.message,
-        });
+
         return Promise.reject(failureResponse);
       }
 
@@ -80,10 +71,7 @@ class AxiosService {
           message: response.data.errors?.[0]?.message || 'Invalid request parameters.',
           success: false,
         });
-        notifyError({
-          title: 'Validation Error',
-          message: invalidModelResponse.message[0],
-        });
+
         return Promise.reject(invalidModelResponse);
       }
 
