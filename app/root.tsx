@@ -17,7 +17,7 @@ import type { Route } from './+types/root';
 
 import stylesheet from '@/index.css?url';
 import NotFoundPage from '@/infrastructure/common/components/error-screen/404/not-found';
-import { GeneralError } from '@/infrastructure/common/components/error-screen/general/general-error';
+import GeneralError from '@/infrastructure/common/components/error-screen/general/general-error';
 import AppLayout from '@/infrastructure/common/components/layout/appLayout';
 import { Toaster } from '@/infrastructure/common/ui/toaster';
 import { AppRoutes } from '@/infrastructure/core/appRoutes';
