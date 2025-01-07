@@ -23,6 +23,10 @@ const Login = () => {
     },
   });
 
+  const handleSubmit = (values: TransformedValues<typeof form>) => {
+    loginRequest(values);
+  };
+
   const validationSchema = z.object({
     username: z
       .string()
@@ -30,6 +34,7 @@ const Login = () => {
       .max(255, { message: 'This field cannot be longer than 255 characters' }),
     password: z.string().min(1, { message: 'This field cannot be empty' }),
   });
+
   const form = useForm({
     initialValues: {
       username: '',
@@ -38,9 +43,6 @@ const Login = () => {
     validate: zodResolver(validationSchema),
   });
 
-  const handleSubmit = (values: TransformedValues<typeof form>) => {
-    loginRequest(values);
-  };
   return (
     <Container fluid>
       <Box className={'flex justify-center items-center h-screen'}>
