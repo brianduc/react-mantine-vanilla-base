@@ -32,9 +32,18 @@ const MenuItems = ({ items, userRoles }: MenuItemsProps) => {
           key={index}
           label={item.label}
           leftSection={item.leftIcon && <item.leftIcon />}
-          onClick={() => navigate(item.path)}
-          aria-current={item.path === window.location.pathname ? 'page' : undefined}
-          className={'rounded-md'}
+          onClick={
+            !item.children // Only navigate if there are no children
+              ? () => navigate(item.path)
+              : undefined // Disable navigation for parents
+          }
+          aria-current={
+            item.path === window.location.pathname ||
+            item.children?.some((val) => val.path === window.location.pathname)
+              ? 'page'
+              : undefined
+          }
+          className='mb-1 rounded-lg'
         >
           {item.children && renderMenuItems(item.children)}
         </NavLink>

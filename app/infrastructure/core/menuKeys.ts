@@ -1,4 +1,4 @@
-import { MenuItem } from '@/infrastructure/common/components/layout/menuItems';
+import { MenuItem } from '@/infrastructure/common/components/layout/menu/menuItems';
 import { AppRoutes } from '@/infrastructure/core/appRoutes';
 import { IconHome2, IconUser, IconUserFilled } from '@tabler/icons-react';
 
