@@ -12,6 +12,7 @@ export class AppRoutes {
     static readonly DASHBOARD = '/dashboard';
     static readonly USERS = '/users';
     static readonly ACCOUNTS = '/accounts';
+    static readonly THROW_ERROR = '/throw-error';
     static readonly PROFILE = '/profile';
     static readonly LOGOUT = '/logout';
   };

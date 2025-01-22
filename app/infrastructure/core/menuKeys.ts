@@ -1,6 +1,6 @@
 import { MenuItem } from '@/infrastructure/common/components/layout/menu/menuItems';
 import { AppRoutes } from '@/infrastructure/core/appRoutes';
-import { IconHome2, IconUser, IconUserFilled } from '@tabler/icons-react';
+import { IconError404, IconHome2, IconUser, IconUserFilled } from '@tabler/icons-react';
 
 export const menuKeys: MenuItem[] = [
   {
@@ -17,6 +17,11 @@ export const menuKeys: MenuItem[] = [
         label: 'Users',
         leftIcon: IconUserFilled,
         path: AppRoutes.PRIVATE.USERS,
+      },
+      {
+        label: 'Throw Error Test',
+        leftIcon: IconError404,
+        path: AppRoutes.PRIVATE.THROW_ERROR,
       },
     ],
   },

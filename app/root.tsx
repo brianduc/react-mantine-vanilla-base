@@ -122,17 +122,25 @@ export default function App() {
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let errorPage = null;
+  let title = null;
   if (isRouteErrorResponse(error)) {
     switch (error.status) {
       case 404:
+        title = 'Not Found';
         errorPage = <NotFound />;
         break;
       case 403:
       default:
+        title = 'Permission Denied';
         errorPage = <GeneralError />;
         break;
     }
   }
 
-  return <main>{errorPage}</main>;
+  return (
+    <main>
+      <title>{title}</title>
+      {errorPage}
+    </main>
+  );
 }

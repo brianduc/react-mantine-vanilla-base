@@ -24,7 +24,7 @@ const MenuCollapsed = ({ items, userRoles }: MenuCollapsedProps) => {
         return !item.children ? (
           <Tooltip key={index} label={item.label} position='right' withArrow>
             <ActionIcon
-              variant={location.pathname === item.path ? 'light' : 'transparent'}
+              variant={location.pathname === item.path ? 'light' : 'subtle'}
               color={location.pathname === item.path ? 'blue' : 'black'}
               size={'lg'}
               onClick={
@@ -46,7 +46,7 @@ const MenuCollapsed = ({ items, userRoles }: MenuCollapsedProps) => {
                     location.pathname === item.path ||
                     item.children.some((child) => child.path === location.pathname)
                       ? 'light'
-                      : 'transparent'
+                      : 'subtle'
                   }
                   color={
                     location.pathname === item.path ||
